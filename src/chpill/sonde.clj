@@ -1,4 +1,5 @@
-(ns chpill.sonde)
+(ns chpill.sonde
+  (:require [sc.api]))
 
 
 (defmacro spy
@@ -19,3 +20,10 @@
   to probe. This allows the `chpill.sonde/spy` macro to be called from anywhere
   without having to require it first."
   identity)
+
+
+(defmacro let-last-sc [body]
+  (if-let [ep-id (try (sc.api/last-ep-id)
+                      (catch Exception e))]
+    `(sc.api/letsc ~ep-id ~body)
+    body))
