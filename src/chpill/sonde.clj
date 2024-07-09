@@ -1,5 +1,6 @@
 (ns chpill.sonde
-  (:require [sc.api]))
+  (:require [clojure.string :as str]
+            [sc.api]))
 
 
 (defmacro spy
@@ -22,8 +23,12 @@
   identity)
 
 
-(defmacro let-last-sc [body]
-  (if-let [ep-id (try (sc.api/last-ep-id)
-                      (catch Exception e))]
-    `(sc.api/letsc ~ep-id ~body)
-    body))
+(defmacro let-last-sc-except-def [body]
+  (let [ep-id (try (sc.api/last-ep-id)
+                   (catch Exception e))
+        is-top-level-var-definition? (and (not (symbol? body))
+                                          (str/starts-with? (name (first body))
+                                                            "def"))]
+    (if (and ep-id (not is-top-level-var-definition?))
+      `(sc.api/letsc ~ep-id ~body)
+      body)))
